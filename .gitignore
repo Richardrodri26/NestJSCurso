@@ -13,7 +13,7 @@ lerna-debug.log*
 postgres/
 
 .env
-
+yarn.lock
 # OS
 .DS_Store
 
