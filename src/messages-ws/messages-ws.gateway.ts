@@ -1,6 +1,7 @@
-import { OnGatewayConnection, OnGatewayDisconnect, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import { OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { MessagesWsService } from './messages-ws.service';
 import { Server, Socket } from 'socket.io';
+import { NewMessageDto } from './dtos/new-message.dto';
 
 @WebSocketGateway({ cors: true })
 export class MessagesWsGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -13,7 +14,6 @@ export class MessagesWsGateway implements OnGatewayConnection, OnGatewayDisconne
 
 
   handleConnection(client: Socket) {
-    // console.log("client connected", client.id)
     this.messagesWsService.registerClient(client)
 
     this.wss.emit('clients-updated', this.messagesWsService.getConnectedClients())
@@ -24,6 +24,31 @@ export class MessagesWsGateway implements OnGatewayConnection, OnGatewayDisconne
     this.messagesWsService.removeClient(client.id)
 
     this.wss.emit('clients-updated', this.messagesWsService.getConnectedClients())
+  }
+
+  // message-from-client
+
+  @SubscribeMessage('message-from-client')
+  onMessageFromClient(client: Socket, payload: NewMessageDto) {
+    // messages-from-server
+
+    //! Esto emite solo al cliente
+    // client.emit('messages-from-server', {
+    //   fullName: 'asdasdas',
+    //   message: payload.message || 'no-message'
+    // })
+
+    //! Emitir a todos menos al cliente inicial
+    //  client.broadcast.emit('messages-from-server', {
+    //   fullName: 'asdasdas',
+    //   message: payload.message || 'no-message'
+    // })
+
+    this.wss.emit('messages-from-server', {
+        fullName: 'asdasdas',
+        message: payload.message || 'no-message'
+      })
+
   }
 
 
